@@ -1,8 +1,9 @@
 import 'dotenv/config'
 import express, { Request, Response } from 'express'
-import { connectToDB } from './config/db'
+import { connectToDB } from './config/db.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import { errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
 
@@ -17,6 +18,8 @@ app.use(cors({
 app.use('/health', (req: Request, res: Response) => {
   return res.status(200).json({ success: true, message: "OK" })
 })
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 4000
 
