@@ -8,12 +8,12 @@ const cookieOption: CookieOptions = {
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
 }
 
-const accessCookieOptions: CookieOptions = {
+export const accessCookieOptions: CookieOptions = {
   ...cookieOption,
   expires: oneDayFromNow()
 }
 
-const refreshCookieOptions: CookieOptions = {
+export const refreshCookieOptions: CookieOptions = {
   ...cookieOption,
   expires: sevenDaysFromNow(),
   path: REFRESH_PATH

@@ -9,7 +9,7 @@ export const generateTokens = (userId: string, role: string) => {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRY as SignOptions['expiresIn']
   })
 
-  return [accessToken, refreshToken]
+  return { accessToken, refreshToken }
 }
 
 export const verifyAccessToken = (token: string) => {

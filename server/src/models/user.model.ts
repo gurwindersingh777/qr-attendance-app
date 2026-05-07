@@ -6,7 +6,7 @@ interface UserDocument extends Document {
   email: string
   password: string
   role: string
-  rollNumber?: number
+  rollNumber?: string
   refreshToken: string
   createdAt: Date
   expireAt: Date
