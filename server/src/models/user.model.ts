@@ -1,11 +1,12 @@
 import mongoose, { Document } from "mongoose";
 import bcrypt from 'bcrypt'
+import { Role } from "../types/role.js";
 
 interface UserDocument extends Document {
   name: string
   email: string
   password: string
-  role: string
+  role: Role
   rollNumber?: string
   refreshToken: string
   createdAt: Date

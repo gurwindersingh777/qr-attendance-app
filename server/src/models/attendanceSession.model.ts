@@ -1,16 +1,14 @@
 import mongoose, { Document } from "mongoose";
 
 export interface AttendanceSessionDocument extends Document {
-  teacherId: mongoose.Types.ObjectId;
-  subjectId: mongoose.Types.ObjectId;
+  teacherId: mongoose.Types.ObjectId
+  subjectId: mongoose.Types.ObjectId
   startTime: Date
   endTime: Date
-  currentToken: string
-  tokenExpiresAt: Date
   manualCode: string
-  manualCodeExpiresAt: Date
-  createdAt: Date;
-  updatedAt: Date;
+  active: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 const attendanceSessionSchema = new mongoose.Schema<AttendanceSessionDocument>(
@@ -20,27 +18,16 @@ const attendanceSessionSchema = new mongoose.Schema<AttendanceSessionDocument>(
       ref: "User",
       required: true,
     },
-
     subjectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subject",
       required: true,
     },
-
     startTime: {
       type: Date,
       required: true,
     },
-
     endTime: {
-      type: Date,
-      required: true,
-    },
-    currentToken: {
-      type: String,
-      required: true,
-    },
-    tokenExpiresAt: {
       type: Date,
       required: true,
     },
@@ -48,9 +35,9 @@ const attendanceSessionSchema = new mongoose.Schema<AttendanceSessionDocument>(
       type: String,
       required: true,
     },
-    manualCodeExpiresAt: {
-      type: Date,
-      required: true,
+    active: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }

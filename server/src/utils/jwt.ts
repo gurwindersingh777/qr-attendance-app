@@ -1,6 +1,12 @@
-import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken'
+import jwt, { JwtPayload as DefaultJwtPayload, SignOptions } from "jsonwebtoken";
+import { Role } from "../types/role.js";
 
-export const generateTokens = (userId: string, role: string) => {
+export interface JwtPayload extends DefaultJwtPayload {
+  userId: string;
+  role: Role
+}
+
+export const generateTokens = (userId: string, role: Role) => {
   const accessToken = jwt.sign({ userId, role }, process.env.ACCESS_TOKEN_SECRET!, {
     expiresIn: process.env.ACCESS_TOKEN_EXPIRY as SignOptions['expiresIn']
   })

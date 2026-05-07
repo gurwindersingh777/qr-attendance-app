@@ -7,6 +7,8 @@ import { errorHandler } from './middlewares/errorHandler.js'
 import authRouter from './routes/auth.route.js'
 import userRouter from './routes/user.route.js'
 import authenticate from './middlewares/authenticate.js'
+import subjectRouter from './routes/subject.route.js'
+import sessionRouter from './routes/session.route.js'
 
 const app = express()
 
@@ -24,6 +26,8 @@ app.use('/health', (req: Request, res: Response) => {
 
 app.use("/auth", authRouter)
 app.use("/user", authenticate, userRouter)
+app.use("/subject", authenticate, subjectRouter)
+app.use("/session", authenticate, sessionRouter)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 4000

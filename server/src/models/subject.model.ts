@@ -28,7 +28,7 @@ const subjectSchema = new mongoose.Schema<SubjectDocument>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     default: []
-  }]
+  }] 
 }, {
   timestamps: true
 })
