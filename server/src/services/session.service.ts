@@ -1,12 +1,65 @@
 import { BAD_REQUEST, CONFLICT, FORBIDDEN, NOT_FOUND } from "../constants/statusCode.js"
 import { AttendanceRecordModel } from "../models/attendanceRecord.model.js"
-import { AttendanceSessionModel } from "../models/attendanceSession.model.js"
+import { AttendanceSessionDocument, AttendanceSessionModel } from "../models/attendanceSession.model.js"
+import { AttendanceSummaryModel } from "../models/attendanceSummary.model.js"
+import { NotificationModel } from "../models/notification.model.js"
 import { SubjectModel } from "../models/subject.model.js"
 import { MarkAttendanceInput, StartSessionInput } from "../schemas/sessoin.schema.js"
 import { ApiError } from "../utils/ApiError.js"
-import { now, sessionEndTime } from "../utils/date.js"
+import { now, oneDayAgo, sessionEndTime } from "../utils/date.js"
 import { generateManualCode } from "../utils/manualCode.js"
 import { generateQRToken, verifyQRToken } from "../utils/qrCode.js"
+import { sendLowAttendanceEmail } from "../utils/sendLowAttendanceEmail.js"
+
+const updateAttendanceSummary = async (session: AttendanceSessionDocument) => {
+
+  const subject = await SubjectModel.findById(session.subjectId).populate("students", "name email")
+
+  if (!subject) {
+    throw new ApiError(NOT_FOUND, "Subject not found")
+  }
+
+  for (const student of subject.students as any[]) {
+
+    const summary = await AttendanceSummaryModel.findOneAndUpdate(
+      { studentId: student._id, subjectId: subject._id },
+      { $inc: { totalSessions: 1 } },
+      { returnDocument: "after", upsert: true }
+    )
+
+    const attendancePercentage = summary.totalSessions === 0
+      ? 0
+      : (summary.attendedSessions / summary.totalSessions) * 100
+    
+    const LOW_ATTENDANCE_THRESHOLD = Number(process.env.LOW_ATTENDANCE_THRESHOLD) || 75
+
+    if (attendancePercentage < LOW_ATTENDANCE_THRESHOLD) {
+
+      const recentNotifcation = await NotificationModel.findOne({
+        userId: student._id,
+        type: "low_attendance",
+        createdAt: { $gt: oneDayAgo() }
+      })
+      
+      if (!recentNotifcation) {
+
+        await sendLowAttendanceEmail({
+          toEmail: student.email,
+          studentName: student.name,
+          subjectName: subject.subjectName,
+          subjectCode: subject.subjectCode,
+          attendancePercentage
+        })
+
+        await NotificationModel.create({
+          userId: student._id,
+          message: `Your attendance in ${subject.subjectName} (${subject.subjectCode}) is ${attendancePercentage}%. Minimum required is 75%.`,
+          type: "low_attendance",
+        })
+      }
+    }
+  }
+}
 
 export const startSession = async (data: StartSessionInput, teacherId: string) => {
 
@@ -21,8 +74,10 @@ export const startSession = async (data: StartSessionInput, teacherId: string) =
 
   const activeSession = await AttendanceSessionModel.findOne({
     subjectId: data.subjectId,
+    active: true,
     endTime: { $gt: now() }
   })
+
   if (activeSession) {
     throw new ApiError(CONFLICT, "A session is already active for this subject")
   }
@@ -73,12 +128,15 @@ export const getActiveSession = async (teacherId: string) => {
 
   const sessions = await AttendanceSessionModel.find({ teacherId, active: true, })
     .populate("subjectId", "subjectName subjectCode")
-    .sort({ createdAt: -1 })
 
   return sessions
 }
 
 export const markAttendance = async (data: MarkAttendanceInput, studentId: string) => {
+
+  if (data.token && data.manualCode) {
+    throw new ApiError(BAD_REQUEST, "Use either QR or manual code")
+  }
 
   const session = await AttendanceSessionModel.findById(data.sessionId)
   if (!session || !session.active) {
@@ -116,6 +174,11 @@ export const markAttendance = async (data: MarkAttendanceInput, studentId: strin
     sessionId: session._id
   })
 
+  await AttendanceSummaryModel.findOneAndUpdate(
+    { studentId, subjectId: session.subjectId },
+    { $inc: { attendedSessions: 1 } },
+    { upsert: true })
+
   return record
 }
 
@@ -130,12 +193,14 @@ export const endSession = async (sessionId: string, teacherId: string) => {
     throw new ApiError(FORBIDDEN, "You do not own this subject")
   }
 
-  if (session.endTime <= now()) {
-    throw new ApiError(BAD_REQUEST, "Session has already ended")
+  if (!session.active) {
+    return { message: "Session has already ended" }
   }
 
   session.active = false
   await session.save()
 
-  return { message: "Session ended" }
+  await updateAttendanceSummary(session)
+
+  return null
 }

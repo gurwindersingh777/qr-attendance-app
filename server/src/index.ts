@@ -9,6 +9,7 @@ import userRouter from './routes/user.route.js'
 import authenticate from './middlewares/authenticate.js'
 import subjectRouter from './routes/subject.route.js'
 import sessionRouter from './routes/session.route.js'
+import attendanceRouter from './routes/attendance.route.js'
 
 const app = express()
 
@@ -28,6 +29,7 @@ app.use("/auth", authRouter)
 app.use("/user", authenticate, userRouter)
 app.use("/subject", authenticate, subjectRouter)
 app.use("/session", authenticate, sessionRouter)
+app.use("/attendance", authenticate, attendanceRouter)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 4000

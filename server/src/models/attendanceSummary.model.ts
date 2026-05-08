@@ -5,7 +5,6 @@ interface AttendanceSummaryDocument extends Document {
   subjectId: mongoose.Types.ObjectId;
   totalSessions: number;
   attendedSessions: number;
-  attendancePercentage: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,11 +27,6 @@ const attendanceSummarySchema = new mongoose.Schema<AttendanceSummaryDocument>(
       default: 0,
     },
     attendedSessions: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    attendancePercentage: {
       type: Number,
       required: true,
       default: 0,

@@ -1,0 +1,155 @@
+import { FORBIDDEN, NOT_FOUND } from "../constants/statusCode.js"
+import { AttendanceRecordModel } from "../models/attendanceRecord.model.js"
+import { AttendanceSessionModel } from "../models/attendanceSession.model.js"
+import { AttendanceSummaryModel } from "../models/attendanceSummary.model.js"
+import { SubjectModel } from "../models/subject.model.js"
+import { ApiError } from "../utils/ApiError.js"
+
+export const getMyAttendanceSummary = async (studentId: string) => {
+  const summaries = await AttendanceSummaryModel.find({ studentId })
+    .populate("subjectId", "subjectName subjectCode teacherId")
+
+  const subjectSummary = summaries.map(summary => ({
+    subject: summary.subjectId,
+    totalLectures: summary.totalSessions,
+    attendedLectures: summary.attendedSessions,
+    percentage: summary.totalSessions === 0
+      ? 0
+      : Number(((summary.attendedSessions / summary.totalSessions) * 100).toFixed(2))
+  }))
+
+  const totalLectures = summaries.reduce((acc, summary) => acc + summary.totalSessions, 0)
+
+  const totalAttendedLectures = summaries.reduce((acc, summary) => acc + summary.attendedSessions, 0)
+
+  const overallPercentage = totalLectures === 0 ? 0
+    : Number(((totalAttendedLectures / totalLectures) * 100).toFixed(2))
+
+  const actionNeeded = overallPercentage < Number(process.env.LOW_ATTENDANCE_THRESHOLD)
+
+  return {
+    overall: {
+      percentage: overallPercentage,
+      actionNeeded,
+      subjectsEnrolled: summaries.length,
+    },
+    subjects: subjectSummary
+  }
+}
+
+export const getMyAttendanceForSubject = async (studentId: string, subjectId: string) => {
+
+  const subject = await SubjectModel.findById(subjectId)
+
+  if (!subject) {
+    throw new ApiError(NOT_FOUND, "Subject not found")
+  }
+
+  const isEnrolled = subject.students.includes(studentId as any)
+  if (!isEnrolled) {
+    throw new ApiError(FORBIDDEN, "You are not enrolled in this subject")
+  }
+
+  const sessions = await AttendanceSessionModel.find({ subjectId }).sort({ startTime: -1 });
+
+  const records = await AttendanceRecordModel.find({ studentId })
+
+  const attendedSessionIds = new Set(records.map(record => record.sessionId.toString()))
+
+  const attendance = sessions.map(session => ({
+    sessionId: session._id,
+
+    startTime: session.startTime,
+
+    endTime: session.endTime,
+
+    attended: attendedSessionIds.has(session._id.toString())
+  }))
+
+  return {
+    subject: {
+      id: subject._id,
+      subjectName: subject.subjectName,
+      subjectCode: subject.subjectCode
+    },
+    attendance
+  }
+}
+
+export const getSubjectAttendanceReport = async (teacherId: string, subjectId: string) => {
+  const subject = await SubjectModel.findById(subjectId).populate("students", "name email");
+
+  if (!subject) {
+    throw new ApiError(NOT_FOUND, "Subject not found")
+  }
+
+  if (subject.teacherId.toString() !== teacherId) {
+    throw new ApiError(FORBIDDEN, "You do not own this subject")
+  }
+
+  const summaries = await AttendanceSummaryModel.find({ subjectId })
+    .populate("studentId", "name email")
+
+  const attendanceSummary = summaries.map(summary => ({
+    _id: summary._id,
+    student: summary.studentId,
+    totalSessions: summary.totalSessions,
+    attendedSessions: summary.attendedSessions,
+    percentage: summary.totalSessions === 0
+      ? 0
+      : Number(((summary.attendedSessions / summary.totalSessions) * 100).toFixed(2))
+  }))
+
+  const overallTotalSessions = await AttendanceSessionModel.countDocuments({ subjectId })
+
+  const overallAttendedSessions = summaries.reduce((acc, summary) => acc + summary.attendedSessions, 0)
+
+  const totalPossibleAttendances = overallTotalSessions * summaries.length;
+
+  const overallPercentage =
+    totalPossibleAttendances === 0
+      ? 0
+      : Number(((overallAttendedSessions / totalPossibleAttendances) * 100).toFixed(2))
+
+  return {
+    subject: {
+      id: subject._id,
+      subjectName: subject.subjectName,
+      subjectCode: subject.subjectCode
+    },
+
+    stats: {
+      totalSessions: overallTotalSessions,
+      overallAttendedSessions,
+      overallPercentage
+    },
+
+    attendanceSummary
+  }
+}
+
+export const getSessionAttendanceReport = async (teacherId: string, sessionId: string) => {
+  const session = await AttendanceSessionModel.findById(sessionId)
+    .populate("subjectId", "subjectName subjectCode")
+
+  if (!session) {
+    throw new ApiError(NOT_FOUND, "Session not found")
+  }
+
+  if (session.teacherId.toString() !== teacherId) {
+    throw new ApiError(FORBIDDEN, "You do not own this session")
+  }
+
+  const records = await AttendanceRecordModel.find({ sessionId })
+    .populate("studentId", "name email")
+
+  return {
+    session: {
+      id: session._id,
+      startTime: session.startTime,
+      endTime: session.endTime,
+      subject: session.subjectId
+    },
+    attendance: records
+  }
+}

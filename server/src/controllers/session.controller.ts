@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { CREATED, OK } from "../constants/statusCode.js";
 import { markAttendanceSchema, startSessionSchema } from "../schemas/sessoin.schema.js";
 import { endSession, generateQR, getActiveSession, markAttendance, startSession } from "../services/session.service.js";
@@ -5,7 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { AsyncHandler } from "../utils/AsyncHandler.js";
 
 export const startSessionHandler = AsyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const data = startSessionSchema.parse(req.body)
     const teacherId = req.user?.userId as string
     const session = await startSession(data, teacherId)
@@ -16,18 +17,18 @@ export const startSessionHandler = AsyncHandler(
 )
 
 export const endSessionHandler = AsyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const teacherId = req.user?.userId as string
     const sessionId = req.params.sessionId as string
     const result = await endSession(sessionId, teacherId)
 
     return res
-      .status(OK).json(new ApiResponse(result.message, "Session ended"))
+      .status(OK).json(new ApiResponse(result?.message, "Session ended"))
   }
 )
 
 export const getActiveSessionHandler = AsyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const teacherId = req.user?.userId as string
     const session = await getActiveSession(teacherId)
 
@@ -37,7 +38,7 @@ export const getActiveSessionHandler = AsyncHandler(
 )
 
 export const generateQRHandler = AsyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const teacherId = req.user?.userId as string
     const sessionId = req.params.sessionId as string
     const sessions = await generateQR(sessionId, teacherId)
@@ -48,7 +49,7 @@ export const generateQRHandler = AsyncHandler(
 )
 
 export const markAttendanceHandler = AsyncHandler(
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const studentId = req.user!.userId
     const data = markAttendanceSchema.parse(req.body)
 
