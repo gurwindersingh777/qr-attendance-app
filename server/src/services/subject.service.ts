@@ -17,12 +17,18 @@ export const createSubject = async (data: CreateSubjectInput, teacherId: string)
   return subject
 }
 
-export const getTeacherSubjects = async (teacherId: string) => {
-  const subject = await SubjectModel.find({ teacherId })
-    .select("-students")
-    .sort({ createdAt: -1 })
+export const getSubjects = async (userId: string, role: string) => {
 
-  return subject
+  if (role === "teacher") {
+    return SubjectModel.find({ teacherId: userId })
+      .populate("students", "name email rollNumber")
+      .sort({ createdAt: -1 })
+  }
+
+  return SubjectModel.find({ students: userId })
+    .select("-students")
+    .populate("teacherId", "name email")
+    .sort({ createdAt: -1 })
 }
 
 export const getSubjectStudents = async (teacherId: string, subjectId: string) => {
@@ -32,14 +38,15 @@ export const getSubjectStudents = async (teacherId: string, subjectId: string) =
 
   if (!subject) throw new ApiError(NOT_FOUND, "Subject not found");
 
-  if (teacherId !== subject.teacherId.toString()) throw new ApiError(FORBIDDEN, "You do not have access to this subject");
+  if (subject.teacherId.toString() !== teacherId)
+    throw new ApiError(FORBIDDEN, "You do not have access to this subject");
 
   return subject.students
 }
 
 export const enrollSubject = async (studentId: string, subjectCode: string) => {
 
-  const subject = await SubjectModel.findOne({ subjectCode })
+  const subject = await SubjectModel.findOne({ subjectCode: subjectCode.toUpperCase() })
   if (!subject) throw new ApiError(NOT_FOUND, "Subject not found");
 
   const alreadyEnrolled = subject.students.includes(studentId as any)
@@ -51,11 +58,3 @@ export const enrollSubject = async (studentId: string, subjectCode: string) => {
   return { message: "Enroll Successfully" }
 }
 
-export const getStudentSubjects = async (studentId: string) => {
-  const subjects = await SubjectModel.find({ students: studentId })
-    .select("-students")
-    .populate("teacherId", "name email")
-    .sort({ createdAt: -1 })
-
-  return subjects
-}

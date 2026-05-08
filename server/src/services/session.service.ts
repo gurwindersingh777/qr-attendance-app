@@ -41,7 +41,7 @@ export const generateQR = async (sessionId: string, teacherId: string) => {
     throw new ApiError(NOT_FOUND, "Session ended");
   }
 
-  const qrImage = generateQRToken(sessionId)
+  const qrImage = await generateQRToken(sessionId)
 
   return {
     qrImage,
@@ -50,6 +50,12 @@ export const generateQR = async (sessionId: string, teacherId: string) => {
 }
 
 export const getActiveSession = async (teacherId: string) => {
+
+  await AttendanceSessionModel.updateMany({
+    teacherId,
+    active: true,
+    endTime: { $lt: now() }
+  }, { active: false })
 
   const sessions = await AttendanceSessionModel.find({ teacherId, active: true, })
     .populate("subjectId", "name code")
@@ -60,10 +66,8 @@ export const getActiveSession = async (teacherId: string) => {
 
 export const markAttendance = async (data: MarkAttendanceInput, studentId: string) => {
 
-  if (!data.token && !data.manualCode) throw new ApiError(FORBIDDEN, "Provide QR or manual code");
-
   const session = await AttendanceSessionModel.findById(data.sessionId)
-  if (!session || !session.active) throw new Error("Session not found");
+  if (!session || !session.active) throw new ApiError(NOT_FOUND, "Session not found");
 
   if (session.endTime < now()) throw new ApiError(FORBIDDEN, "Session expired")
 

@@ -43,7 +43,7 @@ export const generateQRHandler = AsyncHandler(
     const sessions = await generateQR(sessionId, teacherId)
 
     return res
-      .status(OK).json(new ApiResponse(sessions, "session token rotate"))
+      .status(OK).json(new ApiResponse(sessions, "QR generated"))
   }
 )
 

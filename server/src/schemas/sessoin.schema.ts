@@ -5,11 +5,16 @@ export const startSessionSchema = z.object({
   durationMinutes: z.number().min(1, "Minimum 1 minute").max(180, "Minimum 3 hours")
 })
 
-export const markAttendanceSchema = z.object({
-  sessionId: z.string(),
-  token: z.string().optional(),
-  manualCode: z.string().optional(),
-})
+export const markAttendanceSchema = z
+  .object({
+    sessionId: z.string().min(1,"Session ID is required").max(24),
+    token: z.string().optional(),
+    manualCode: z.string().optional(),
+  })
+  .refine(
+    data => data.token || data.manualCode,
+    { message: "Provide QR or manual code" }
+  )
 
 export type StartSessionInput = z.infer<typeof startSessionSchema>
 export type MarkAttendanceInput = z.infer<typeof markAttendanceSchema>

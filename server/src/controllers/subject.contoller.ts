@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AsyncHandler } from "../utils/AsyncHandler.js";
-import { createSubject, enrollSubject, getStudentSubjects, getSubjectStudents, getTeacherSubjects } from "../services/subject.service.js";
+import { createSubject, enrollSubject, getSubjects, getSubjectStudents } from "../services/subject.service.js";
 import { createSubjectSchema, enrollSchema } from "../schemas/subject.schema.js";
 import { CREATED, OK } from "../constants/statusCode.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -17,13 +17,14 @@ export const createSubjectHandler = AsyncHandler(
   }
 )
 
-export const getTeacherSubjectsHandler = AsyncHandler(
+export const getSubjectsHandler = AsyncHandler(
   async (req: Request, res: Response) => {
-    const teacherId = req.user?.userId as string
-    const subjects = await getTeacherSubjects(teacherId)
+    const userId = req.user?.userId as string
+    const role = req.user?.role as string
+    const subjects = await getSubjects(userId, role)
 
     return res
-      .status(OK).json(new ApiResponse(subjects, "Teacher subjects fetched successfully"))
+      .status(OK).json(new ApiResponse(subjects, "Subjects fetched successfully"))
   }
 )
 
@@ -39,25 +40,16 @@ export const getSubjectStudentsHandler = AsyncHandler(
 )
 
 export const enrollSubjectHandler = AsyncHandler(
-  async (req: Request, res: Response) => {  
-    const studentId = req.user?.userId as string
-    const { subjectCode } = enrollSchema.parse(req.body)
-    const result = await enrollSubject(studentId , subjectCode)
-
-    return res
-      .status(OK).json(new ApiResponse(result.message, "Enrolled successfully"))
-  }
-)
-
-export const getStudentSubjectsHandler = AsyncHandler(
   async (req: Request, res: Response) => {
     const studentId = req.user?.userId as string
-    const subjects = await getStudentSubjects(studentId)
+    const { subjectCode } = enrollSchema.parse(req.body)
+    await enrollSubject(studentId, subjectCode)
 
     return res
-      .status(OK).json(new ApiResponse(subjects, "Student subjects fetched successfully"))
+      .status(OK).json(new ApiResponse(null, "Enrolled successfully"))
   }
 )
+
 
 
 
