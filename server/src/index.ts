@@ -10,6 +10,8 @@ import authenticate from './middlewares/authenticate.js'
 import subjectRouter from './routes/subject.route.js'
 import sessionRouter from './routes/session.route.js'
 import attendanceRouter from './routes/attendance.route.js'
+import adminRouter from './routes/admin.route.js'
+import notificationRouter from './routes/notification.route.js'
 
 const app = express()
 
@@ -30,6 +32,8 @@ app.use("/user", authenticate, userRouter)
 app.use("/subject", authenticate, subjectRouter)
 app.use("/session", authenticate, sessionRouter)
 app.use("/attendance", authenticate, attendanceRouter)
+app.use("/admin", authenticate, adminRouter)
+app.use("/notification", authenticate, notificationRouter)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 4000
