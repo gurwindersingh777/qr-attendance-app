@@ -41,10 +41,10 @@ export const generateQRHandler = AsyncHandler(
   async (req: Request, res: Response) => {
     const teacherId = req.user?.userId as string
     const sessionId = req.params.sessionId as string
-    const sessions = await generateQR(sessionId, teacherId)
+    const { qrImage, manualCode } = await generateQR(sessionId, teacherId)
 
     return res
-      .status(OK).json(new ApiResponse(sessions, "QR generated"))
+      .status(OK).json(new ApiResponse({ qrImage, manualCode }, "QR generated"))
   }
 )
 
