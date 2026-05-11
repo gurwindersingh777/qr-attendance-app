@@ -1,6 +1,6 @@
 import api from "@/config/apiClient";
+import { Notification } from "@/types";
 import { ApiResponse } from "@/types/ApiResponse";
-
 
 export const notificationApi = {
   getAll: () =>
