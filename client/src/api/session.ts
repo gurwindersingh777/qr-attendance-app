@@ -1,8 +1,7 @@
 import api from "@/config/apiClient";
 import { MarkAttendanceInput, StartSessionInput } from "@/schemas/sesssion.schema";
 import { ApiResponse } from "@/types/ApiResponse";
-import { Record } from "@/types";
-import { Session } from "react-router-dom";
+import { Record, Session } from "@/types";
 
 export const sessionApi = {
   start: (data: StartSessionInput) =>
@@ -14,8 +13,11 @@ export const sessionApi = {
   generateQR: (sessionId: string) =>
     api.get<ApiResponse<{ qrImage: string, manualCode: string }>>(`/session/${sessionId}/qr/`).then((res) => res.data),
 
+  getSession: (sessionId: string) =>
+    api.get<ApiResponse<Session>>(`/session/${sessionId}/`).then((res) => res.data),
+
   active: () =>
-    api.get<ApiResponse<Session[]>>(`/session/active/`).then((res) => res.data),
+    api.get<ApiResponse<Session[] | null>>(`/session/active/`).then((res) => res.data),
 
   attendance: (data: MarkAttendanceInput) =>
     api.post<ApiResponse<Record>>(`/session/attendance`, data).then((res) => res.data),

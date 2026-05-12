@@ -34,7 +34,7 @@ export default function UserAvatar() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger >
+      <DropdownMenuTrigger asChild >
         <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-100 transition-colors">
           <div className="w-7 h-7 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm sm:text-xs font-medium">
             {initialsNameLetters}

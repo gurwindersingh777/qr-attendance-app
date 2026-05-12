@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CREATED, OK } from "../constants/statusCode.js";
 import { markAttendanceSchema, startSessionSchema } from "../schemas/sessoin.schema.js";
-import { endSession, generateQR, getActiveSession, markAttendance, startSession } from "../services/session.service.js";
+import { endSession, generateQR, getActiveSession, getSession, markAttendance, startSession } from "../services/session.service.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { AsyncHandler } from "../utils/AsyncHandler.js";
 
@@ -24,6 +24,17 @@ export const endSessionHandler = AsyncHandler(
 
     return res
       .status(OK).json(new ApiResponse(result?.message, "Session ended"))
+  }
+)
+
+export const getSessionHandler = AsyncHandler(
+  async (req: Request, res: Response) => {
+    const teacherId = req.user?.userId as string
+    const sessionId = req.params.sessionId as string
+    const session = await getSession(sessionId , teacherId)
+
+    return res
+      .status(OK).json(new ApiResponse(session, "Session fetched"))
   }
 )
 

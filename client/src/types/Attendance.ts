@@ -44,6 +44,7 @@ export interface SubjectAttendanceStudentSummary {
     _id: string
     name: string
     email: string
+    rollNumber?: string
   }
 
   totalSessions: number
@@ -54,6 +55,10 @@ export interface SubjectAttendanceStats {
   totalSessions: number
   overallAttendedSessions: number
   overallPercentage: number
+
+  totalStudents: number
+  belowThreshold: number
+  averageAttendance: number
 }
 export interface SubjectAttendanceReport {
   subject: {
@@ -74,6 +79,7 @@ export interface SessionAttendanceRecord {
     _id: string
     name: string
     email: string
+    rollNumber : string
   }
   sessionId: string
   createdAt?: string

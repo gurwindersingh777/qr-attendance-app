@@ -30,7 +30,7 @@ const updateAttendanceSummary = async (session: AttendanceSessionDocument) => {
     const attendancePercentage = summary.totalSessions === 0
       ? 0
       : (summary.attendedSessions / summary.totalSessions) * 100
-    
+
     const LOW_ATTENDANCE_THRESHOLD = Number(process.env.LOW_ATTENDANCE_THRESHOLD) || 75
 
     if (attendancePercentage < LOW_ATTENDANCE_THRESHOLD) {
@@ -40,7 +40,7 @@ const updateAttendanceSummary = async (session: AttendanceSessionDocument) => {
         type: "low_attendance",
         createdAt: { $gt: oneDayAgo() }
       })
-      
+
       if (!recentNotifcation) {
 
         await sendLowAttendanceEmail({
@@ -118,6 +118,26 @@ export const generateQR = async (sessionId: string, teacherId: string) => {
   }
 }
 
+export const getSession = async (sessionId: string, teacherId: string) => {
+
+  const session = await AttendanceSessionModel.findById(sessionId)
+    .populate("subjectId", "subjectName subjectCode")
+
+  if (!session) {
+    throw new ApiError(NOT_FOUND, "Session not found")
+  }
+
+  if (session?.teacherId.toString() !== teacherId) {
+    throw new ApiError(FORBIDDEN, "You do not own this subject")
+  }
+
+  if (!session.active) {
+    throw new ApiError(FORBIDDEN, "Session has already ended")
+  }
+
+  return session
+}
+
 export const getActiveSession = async (teacherId: string) => {
 
   await AttendanceSessionModel.updateMany({
@@ -128,6 +148,8 @@ export const getActiveSession = async (teacherId: string) => {
 
   const sessions = await AttendanceSessionModel.find({ teacherId, active: true, })
     .populate("subjectId", "subjectName subjectCode")
+  
+  if (!sessions) return null;
 
   return sessions
 }

@@ -111,6 +111,15 @@ export const getSubjectAttendanceReport = async (teacherId: string, subjectId: s
       ? 0
       : Number(((overallAttendedSessions / totalPossibleAttendances) * 100).toFixed(2))
 
+  const totalStudents = attendanceSummary.length
+
+  const belowThreshold = attendanceSummary.filter(s => s.percentage < 75).length
+
+  const averageAttendance =
+    totalStudents === 0
+      ? 0
+      : Math.round(attendanceSummary.reduce((acc, s) => acc + s.percentage, 0) / totalStudents)
+
   return {
     subject: {
       id: subject._id,
@@ -121,7 +130,10 @@ export const getSubjectAttendanceReport = async (teacherId: string, subjectId: s
     stats: {
       totalSessions: overallTotalSessions,
       overallAttendedSessions,
-      overallPercentage
+      overallPercentage,
+      totalStudents,
+      belowThreshold,
+      averageAttendance,
     },
 
     attendanceSummary
@@ -141,7 +153,7 @@ export const getSessionAttendanceReport = async (teacherId: string, sessionId: s
   }
 
   const records = await AttendanceRecordModel.find({ sessionId })
-    .populate("studentId", "name email")
+    .populate("studentId", "name email rollNumber")
 
   return {
     session: {

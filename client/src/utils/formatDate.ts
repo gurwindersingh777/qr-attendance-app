@@ -5,3 +5,10 @@ export function formatDate(dateString: string): string {
     year: 'numeric',
   })
 }
+
+export function formatTime(dateString: Date): string {
+  return new Date(dateString).toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
