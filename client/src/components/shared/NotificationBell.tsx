@@ -8,6 +8,7 @@ import { ScrollArea } from "../ui/scroll-area"
 import { Badge } from "../ui/badge"
 import { Separator } from "../ui/separator"
 import { Notification } from "@/types"
+import { formatDate } from "@/utils/formatDate"
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false)
@@ -40,7 +41,7 @@ export default function NotificationBell() {
   })
 
   const unreadCount = unreadCountData?.data ?? 0
-  const notifications : Notification[] = notificationsData?.data ?? []
+  const notifications: Notification[] = notificationsData?.data ?? []
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -111,7 +112,7 @@ export default function NotificationBell() {
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-slate-400">
-                          {/* {formatDate(notification.createdAt)} */}
+                          {formatDate(notification.createdAt)}
                         </span>
                         {notification.type === 'low_attendance' && (
                           <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
