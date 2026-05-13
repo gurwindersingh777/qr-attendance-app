@@ -1,6 +1,6 @@
 import resend from "../config/resend.js"
 import { lowAttendanceTemplate } from "../emails/lowAttendanceTemplate.js";
-import { SendLowAttendanceEmailProps } from "../types/LowAttendanceEmail.js";
+import { SendLowAttendanceEmailProps } from "../types/lowAttendanceEmail.js";
 
 export const sendLowAttendanceEmail =
   async ({ toEmail, studentName, subjectName, subjectCode, attendancePercentage }:
