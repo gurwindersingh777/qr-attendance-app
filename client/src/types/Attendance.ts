@@ -12,7 +12,7 @@ export interface SubjectAttendanceSummary {
 }
 export interface AttendanceOverview {
   percentage: number
-  actionNeeded: boolean
+  actionNeeded: number
   subjectsEnrolled: number
 }
 export interface OverallAttendance {
@@ -25,7 +25,8 @@ export interface SubjectAttendanceSession {
   sessionId: string
   startTime: Date
   endTime: Date
-  attended: boolean
+  attended: boolean,
+  date : Date
 }
 export interface SubjectAttendance {
   subject: {
@@ -34,6 +35,8 @@ export interface SubjectAttendance {
     subjectCode: string
   }
   attendance: SubjectAttendanceSession[]
+  totalSessions : number
+  totalAttendedSessions : number
 }
 
 // getSubjectAttendanceReport

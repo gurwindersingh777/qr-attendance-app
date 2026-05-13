@@ -7,7 +7,6 @@ export const startSessionSchema = z.object({
 
 export const markAttendanceSchema = z
   .object({
-    sessionId: z.string().min(1,"Session ID is required").max(24),
     token: z.string().optional(),
     manualCode: z.string().optional(),
   })

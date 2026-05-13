@@ -148,7 +148,7 @@ export const getActiveSession = async (teacherId: string) => {
 
   const sessions = await AttendanceSessionModel.find({ teacherId, active: true, })
     .populate("subjectId", "subjectName subjectCode")
-  
+
   if (!sessions) return null;
 
   return sessions
@@ -160,7 +160,29 @@ export const markAttendance = async (data: MarkAttendanceInput, studentId: strin
     throw new ApiError(BAD_REQUEST, "Use either QR or manual code")
   }
 
-  const session = await AttendanceSessionModel.findById(data.sessionId)
+  let session: AttendanceSessionDocument | null = null
+
+  if (data.token) {
+    const decoded = await verifyQRToken(data.token)
+    session = await AttendanceSessionModel.findById(decoded.sessionId)
+
+    if (!session || !session.active) {
+      throw new ApiError(NOT_FOUND, "Session not found")
+    }
+  }
+
+  if (data.manualCode) {
+    session = await AttendanceSessionModel.findOne({
+      manualCode: data.manualCode,
+      active: true,
+      endTime: { $gt: now() }
+    })
+
+    if (!session) {
+      throw new ApiError(NOT_FOUND, "Invalid manual code")
+    }
+  }
+
   if (!session || !session.active) {
     throw new ApiError(NOT_FOUND, "Session not found")
   }
@@ -175,21 +197,8 @@ export const markAttendance = async (data: MarkAttendanceInput, studentId: strin
     throw new ApiError(FORBIDDEN, "You have not enrolled in this subject")
   }
 
-  const alreadyMarked = await AttendanceRecordModel.findOne({ studentId, sessionId: data.sessionId })
+  const alreadyMarked = await AttendanceRecordModel.findOne({ studentId, sessionId: session._id })
   if (alreadyMarked) throw new ApiError(FORBIDDEN, "You have already marked attendance for this session");
-
-  if (data.token) {
-    const decorded = await verifyQRToken(data.token)
-    if (decorded.sessionId !== session._id.toString()) {
-      throw new ApiError(FORBIDDEN, "Invalid QR")
-    }
-  }
-
-  if (data.manualCode) {
-    if (data.manualCode !== session.manualCode) {
-      throw new ApiError(FORBIDDEN, "Invalid manual code")
-    }
-  }
 
   const record = await AttendanceRecordModel.create({
     studentId,

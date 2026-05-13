@@ -58,13 +58,13 @@ export const getMyAttendanceForSubject = async (studentId: string, subjectId: st
 
   const attendance = sessions.map(session => ({
     sessionId: session._id,
-
     startTime: session.startTime,
-
     endTime: session.endTime,
-
-    attended: attendedSessionIds.has(session._id.toString())
+    attended: attendedSessionIds.has(session._id.toString()),
+    date: session.createdAt
   }))
+
+  const totalAttendedSessions = attendance.filter(a => a.attended).length
 
   return {
     subject: {
@@ -72,7 +72,9 @@ export const getMyAttendanceForSubject = async (studentId: string, subjectId: st
       subjectName: subject.subjectName,
       subjectCode: subject.subjectCode
     },
-    attendance
+    attendance,
+    totalSessions: sessions.length,
+    totalAttendedSessions
   }
 }
 

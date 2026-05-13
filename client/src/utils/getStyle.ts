@@ -10,3 +10,10 @@ export function getBarColor(pct: number) {
   if (pct >= 60) return 'bg-amber-400'
   return 'bg-red-500'
 }
+
+export function getPctColor(pct: number) {
+  if (pct >= 75) return 'text-green-600'
+  if (pct >= 60) return 'text-amber-500'
+  return 'text-red-500'
+}
+
