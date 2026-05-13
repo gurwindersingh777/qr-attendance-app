@@ -14,6 +14,16 @@ export default defineConfig({
   },
   server: {
     host: true,
-    https: {}
+    https: {},
+    proxy: {
+  "/api": {
+    target: "http://10.158.252.1:4000",
+    changeOrigin: true,
+    secure: false,
+
+    rewrite: (path) =>
+      path.replace(/^\/api/, ""),
+  },
+},
   }
 })

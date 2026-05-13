@@ -1,5 +1,3 @@
-// StudentScanQR.tsx
-
 import { sessionApi } from "@/api/session"
 import ManualTokenEntry from "@/components/shared/ManualTokenEntry"
 import { Button } from "@/components/ui/button"
@@ -39,12 +37,20 @@ export default function StudentScanQR() {
   })
 
   const handleScan = useCallback(
-    (token: string) => {
-      if (token === lastScannedToken || isPending) return
-      setLastScannedToken(token)
-      markAttendance({ token })
+    (scannedValue: string) => {
+      if (isPending) return
+      try {
+        const parsed = JSON.parse(scannedValue)
+        if (!parsed.token) {
+          throw new Error()
+        }
+        markAttendance({token: parsed.token})
+      } catch {
+        setScanState("error")
+        setLastMessage("Invalid QR code")
+      }
     },
-    [lastScannedToken, isPending, markAttendance,]
+    [isPending, markAttendance]
   )
 
   const { SCANNER_ID, isStarting, cameraError } = useQRScanner({ onScan: handleScan, enabled: cameraActive })

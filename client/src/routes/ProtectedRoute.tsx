@@ -1,3 +1,4 @@
+import PageLoader from "@/components/shared/PageLoader"
 import { useAuthStore } from "@/store/authStore"
 import { Role } from "@/types"
 import { getDefaultRoute } from "@/utils/getDefaultRoute"
@@ -9,14 +10,18 @@ interface Props {
 }
 
 export default function ProtectedRoute({ children, allowedRole }: Props) {
-  const { isAuthenticated, user } = useAuthStore()
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />
-  }
+  const { isAuthenticated, user, hydrated } = useAuthStore()
+
+  if (!hydrated) return <PageLoader />
+
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />
 
   if (user.role !== allowedRole) {
-    return <Navigate to={getDefaultRoute(user.role)} replace />
+    return (
+      <Navigate to={getDefaultRoute(user.role)} replace
+      />
+    )
   }
 
   return <>{children}</>
