@@ -12,10 +12,13 @@ import sessionRouter from './routes/session.route.js'
 import attendanceRouter from './routes/attendance.route.js'
 import adminRouter from './routes/admin.route.js'
 import notificationRouter from './routes/notification.route.js'
+import { authRateLimiter, generalRateLimiter, helmetMiddleware } from './middlewares/security.js'
 
 const app = express()
 
-app.use(express.json())
+app.use(helmetMiddleware)
+
+app.use(express.json({ limit: '10kb' }))
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.use(cors({
@@ -23,11 +26,13 @@ app.use(cors({
   credentials: true
 }))
 
+app.use(generalRateLimiter)
+
 app.use('/health', (req: Request, res: Response) => {
   return res.status(200).json({ success: true, message: "OK" })
 })
 
-app.use("/auth", authRouter)
+app.use("/auth", authRateLimiter, authRouter)
 app.use("/user", authenticate, userRouter)
 app.use("/subject", authenticate, subjectRouter)
 app.use("/session", authenticate, sessionRouter)
