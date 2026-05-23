@@ -90,7 +90,7 @@ export default function AdminUserDetail() {
     .slice(0, 2)
 
   return (
-    <div className="max-w-xl space-y-5">
+    <div className="space-y-5">
 
       <Link
         to="/admin/users"

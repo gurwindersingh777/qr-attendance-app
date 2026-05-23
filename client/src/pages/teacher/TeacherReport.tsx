@@ -41,7 +41,7 @@ export default function TeacherReport() {
   }
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
       <Link
         to="/teacher/subjects"
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors"

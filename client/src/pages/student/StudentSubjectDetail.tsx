@@ -28,7 +28,7 @@ export default function StudentSubjectDetail() {
   const pct = total > 0 ? Math.round((attended / total) * 100) : 0
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="space-y-5">
 
       <Link
         to="/student/subjects"

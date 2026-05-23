@@ -17,7 +17,7 @@ export default function AdminSubjects() {
   if (isLoading) return <PageLoader />
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
 
       <p className="text-md sm:text-sm text-slate-500 mt-0.5">
         {subjects.length} subject{subjects.length !== 1 ? 's' : ''} across all teachers

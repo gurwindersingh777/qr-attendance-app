@@ -38,7 +38,7 @@ export default function StudentSubjects() {
   if (isLoading) return <PageLoader />
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
 
       <div className="flex items-center justify-between px-1">
         <p className=" sm:text-sm text-slate-500 mt-0.5">

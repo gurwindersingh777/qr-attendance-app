@@ -54,7 +54,7 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
 
       <div>
         <h2 className="text-2xl sm:text-lg  font-semibold text-slate-900">Hello, {user?.name?.split(' ')[0]}</h2>

@@ -63,7 +63,7 @@ export default function TeacherDashboard() {
   if (subjectsLoading || sessionsLoading) return <PageLoader />
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <p className="text-sm text-slate-500 mt-0.5">
         {activeSessions.length > 0
           ? `${activeSessions.length} session${activeSessions.length > 1 ? 's' : ''} running right now`

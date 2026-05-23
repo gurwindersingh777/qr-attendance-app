@@ -59,7 +59,7 @@ export default function ManualTokenEntry({ onSubmit, isPending }: Props) {
             autoCapitalize="characters"
             {...register("manualCode")}
             className={cn(
-              "uppercase tracking-widest font-mono",
+              "uppercase tracking-widest text-sm md:text-xs font-mono",
               errors.manualCode ? "border-red-400" : ""
             )}
           />

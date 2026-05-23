@@ -44,7 +44,7 @@ export default function AdminUsers() {
   if (isLoading) return <PageLoader />
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {(['all', 'student', 'teacher', 'admin'] as const).map((r) => (

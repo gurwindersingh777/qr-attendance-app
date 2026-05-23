@@ -96,7 +96,7 @@ export default function TeacherSession() {
   }
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="space-y-5">
 
       <div className="flex items-start justify-between gap-4 px-1">
         <div>
