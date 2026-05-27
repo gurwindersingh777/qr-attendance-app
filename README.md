@@ -1,12 +1,7 @@
-<div align="center">
-
-<img src="https://img.shields.io/badge/QR%20Attendance%20App-0f172a?style=for-the-badge&logo=qrcode&logoColor=white" alt="QR Attendance App" />
-
 # QR Attendance App
 
-A full-stack digital attendance system where teachers generate rotating QR codes and students mark attendance by scanning them in real time.
+> **Built to replace paper registers.** Teachers generate a QR code that rotates every 30 seconds — students scan to mark attendance instantly. Proxy attendance is blocked because the code expires before it can be shared.
 
-**[🚀 Live Demo](https://qr-attendance--app.vercel.app)** · **[Backend API](https://qr-attendance-app-xj9r.onrender.com/health)**
 
 ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
@@ -16,78 +11,132 @@ A full-stack digital attendance system where teachers generate rotating QR codes
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-46E3B7?style=flat&logo=render&logoColor=white)
+<br/><br/>
 
-</div>
+🚀 **[Live Demo](https://your-live-url.vercel.app)** &nbsp;·&nbsp; 📡 **[Backend API](https://your-api-url.onrender.com/health)**
 
----
-
-## What is this?
-
-Traditional attendance using paper registers is slow, easy to fake, and hard to analyse. QR Attendance App solves this by letting teachers generate a session QR code that **rotates every 30 seconds** — students scan it on their phone to mark attendance instantly. Proxy attendance is blocked because the code changes before it can be shared.
+> ⚠️ The backend is hosted on Render's free tier — it may take **10–15 seconds to wake up** on first request. Subsequent requests are fast.
 
 ---
 
-## Demo credentials
+## Screenshots
 
-Try the live app right now — no sign up needed:
+### 🎓 Student
 
-| Role    | Email              | Password    |
-|---------|--------------------|-------------|
-| Teacher | teacher@demo.com   | Teacher@123 |
-| Student | student@demo.com   | Student@123 |
-| Admin   | admin@demo.com     | Admin@123   |
+<img src="./docs/screenshots/student-dashboard.png" width="49%"/> <img src="./docs/screenshots/student-scan.png" width="49%"/>
+
+<img src="./docs/screenshots/student-subject-detail.png" width="49%"/> <img src="./docs/screenshots/student-notification.png" width="49%"/>
+
+### 👨‍🏫 Teacher
+
+<img src="./docs/screenshots/teacher-session.png" width="49%"/> <img src="./docs/screenshots/teacher-report.png" width="49%"/>
+
+### 🛡️ Admin
+
+<img src="./docs/screenshots/admin-panel.png" width="49%"/> <img src="./docs/screenshots/admin-subject-panel.png" width="49%"/>
+
+> 💡 **Tip for reviewers:** Use the demo credentials below to try the full flow — no sign-up needed.
+
+---
+
+## Demo Credentials
+
+| Role    | Email            | Password    |
+| ------- | ---------------- | ----------- |
+| Teacher | teacher@demo.com | Teacher@123 |
+| Student | student@demo.com | Student@123 |
+| Admin   | admin@demo.com   | Admin@123   |
+
+---
+
+## What Problem Does This Solve?
+
+Traditional paper attendance has three core problems:
+
+- **Slow** — calling names or signing sheets wastes 5–10 minutes per class
+- **Proxy-prone** — a friend can sign for an absent student
+- **Hard to analyse** — manual sheets don't give percentage breakdowns or alerts
+
+This app solves all three. The rotating QR code is the key insight: even if a student screenshots the code and shares it on WhatsApp, the code expires in 30 seconds — long before a proxy can use it.
 
 ---
 
 ## Features
 
-### Teacher
+### 👨‍🏫 Teacher
+
 - Create subjects with a unique enrollment code
-- Start an attendance session with a set duration
-- QR code auto-rotates every 30 seconds — prevents proxy attendance
-- 6-character manual code displayed alongside QR for students without a camera
+- Start an attendance session with a configurable duration
+- QR code auto-rotates every **30 seconds** — blocks proxy attendance
+- **6-character manual code** displayed alongside QR (fallback for students without a camera)
 - Live view of which students have marked attendance
 - End session early at any time
 - View attendance report per subject — percentage per student
-- Export attendance as CSV
+- Export attendance as **CSV**
 
-### Student
+### 👨‍🎓 Student
+
 - Enroll in subjects using a teacher-provided code
 - Mark attendance by scanning QR code via phone camera
 - Manual code entry as fallback
 - Dashboard showing attendance percentage per subject
 - Session-by-session history — present or absent for every class
-- Low attendance alert when percentage drops below 75%
+- **Low attendance alert** when percentage drops below 75%
 
-### Admin
+### 🛡️ Admin
+
 - View, search, and filter all users by role
 - Edit any user's profile — name, email, role, roll number
 - Delete users — automatically cleans up enrollments and subjects
 - View all subjects across all teachers
 
-### System
-- Automated email alert via Resend when student attendance drops below 75%
-- In-app notification with unread count badge
-- JWT authentication with refresh token rotation
+### ⚙️ System
+
+- Automated **email alert** via Resend when student attendance drops below 75%
+- In-app notifications with unread count badge
+- JWT authentication with **refresh token rotation**
 - Role-based route protection — student, teacher, admin
 - Fully responsive — works on mobile and desktop
 
 ---
 
-## Tech stack
+## How the Rotating QR Works
 
-| Layer        | Technology                                      |
-|--------------|-------------------------------------------------|
-| Frontend     | React 18, TypeScript, Vite                      |
-| Styling      | Tailwind CSS, shadcn/ui                         |
-| State        | Zustand (auth), TanStack Query (server state)   |
-| Forms        | React Hook Form + Zod                           |
-| Backend      | Node.js, Express, TypeScript                    |
-| Database     | MongoDB, Mongoose                               |
-| Auth         | JWT (access + refresh tokens), bcrypt           |
-| Email        | Resend                                          |
-| QR Code      | qrcode (generation), html5-qrcode (scanning)    |
-| Deployment   | Vercel (frontend), Render (backend), Atlas (DB) |
+```
+Teacher starts session
+        ↓
+Server generates QR token + 6-char manual code
+QR token expires in 30 seconds
+        ↓
+Teacher screen shows QR image + manual code + countdown timer
+        ↓
+Student scans QR or types manual code
+Server validates token → checks enrollment → saves attendance record
+        ↓
+Every 30 seconds:
+  — New QR token generated
+  — Old token immediately invalidated
+  — Proxy via screenshot or WhatsApp is blocked
+```
+
+**Why this works:** The window between a student screenshotting the code and sharing it is longer than 30 seconds in any realistic scenario — group chat lag, recipient opening the app, camera focus — the token is already dead.
+
+---
+
+## Tech Stack
+
+| Layer      | Technology                                       |
+| ---------- | ------------------------------------------------ |
+| Frontend   | React 18, TypeScript, Vite                       |
+| Styling    | Tailwind CSS, shadcn/ui                          |
+| State      | Zustand (auth), TanStack Query (server state)    |
+| Forms      | React Hook Form + Zod                            |
+| Backend    | Node.js, Express, TypeScript                     |
+| Database   | MongoDB, Mongoose                                |
+| Auth       | JWT (access + refresh tokens), bcrypt            |
+| Email      | Resend                                           |
+| QR Code    | `qrcode` (generation), `html5-qrcode` (scanning) |
+| Deployment | Vercel (frontend), Render (backend), Atlas (DB)  |
 
 ---
 
@@ -100,13 +149,12 @@ client/                     # React frontend
 │   ├── components/         # Shared UI components + layouts
 │   ├── config/             # Axios and Query Client configuration
 │   ├── hooks/              # Custom hooks (QR scanner, session timer)
-│   ├── lib/                # shadcn util file
 │   ├── pages/              # Pages per role (student/teacher/admin)
 │   ├── store/              # Zustand auth store
 │   ├── types/              # TypeScript interfaces
-│   ├── schemas/            # Zod schemas
+│   ├── schemas/            # Zod validation schemas
 │   ├── routes/             # React Router with protected routes
-│   └── utils/              # Utilities
+│   └── utils/              # Utility functions
 
 server/                     # Node.js backend
 ├── src/
@@ -125,29 +173,13 @@ server/                     # Node.js backend
 
 ---
 
-## How the rotating QR works
-Teacher starts session
-↓
-Server generates qr token + 6-char manual code
-qr token  expire in 30 seconds
-↓
-Teacher screen shows QR image + manual code + countdown
-↓
-Student scans QR or types manual code
-Server validates token → checks enrollment → saves record
-↓
-Every 30 seconds — new qr token generated
-Old token immediately invalid
-Proxy via screenshot or WhatsApp blocked
-
----
-
-## Local setup
+## Local Setup
 
 ### Prerequisites
+
 - Node.js 18+
-- MongoDB running locally or Atlas connection string
-- Resend account for email (free tier)
+- MongoDB running locally or an [Atlas](https://www.mongodb.com/atlas) connection string
+- [Resend](https://resend.com) account for email (free tier is sufficient)
 
 ### 1. Clone the repo
 
@@ -172,61 +204,73 @@ npm run dev
 cd client
 npm install
 cp .env.example .env
-# Leave VITE_API_URL empty for local dev
+# Leave VITE_API_URL empty for local dev — it defaults to localhost:4000
 npm run dev
 ```
 
 ### 4. Open the app
 
-Frontend → http://localhost:5173
-Backend  → http://localhost:4000/health
+| Service  | URL                          |
+| -------- | ---------------------------- |
+| Frontend | http://localhost:5173        |
+| Backend  | http://localhost:4000/health |
 
 ---
 
-## API overview
+## API Overview
 
-| Method | Route | Access | Description |
-|--------|-------|--------|-------------|
-| POST | /auth/register | Public | Create account |
-| POST | /auth/login | Public | Login |
-| POST | /subject | Teacher | Create subject |
-| POST | /subject/enroll | Student | Enroll by code |
-| POST | /session/start | Teacher | Start session + generate QR |
-| GET | /session/:sessionId/qr | Teacher | Rotate QR token |
-| POST | /session/mark | Student | Mark attendance |
-| GET | /attendance/summary | Student | My attendance % |
-| GET | /attendance/report/subject/:id | Teacher | All students report |
-| GET | /admin/users | Admin | All users |
-| GET | /notification | Any | My notifications |
+| Method | Route                            | Access  | Description                 |
+| ------ | -------------------------------- | ------- | --------------------------- |
+| POST   | `/auth/register`                 | Public  | Create account              |
+| POST   | `/auth/login`                    | Public  | Login                       |
+| POST   | `/subject`                       | Teacher | Create subject              |
+| POST   | `/subject/enroll`                | Student | Enroll by code              |
+| POST   | `/session/start`                 | Teacher | Start session + generate QR |
+| GET    | `/session/:sessionId/qr`         | Teacher | Rotate QR token             |
+| POST   | `/session/mark`                  | Student | Mark attendance             |
+| GET    | `/attendance/summary`            | Student | My attendance %             |
+| GET    | `/attendance/report/subject/:id` | Teacher | All students report         |
+| GET    | `/admin/users`                   | Admin   | All users                   |
+| GET    | `/notification`                  | Any     | My notifications            |
 
 ---
 
 ## Security
 
-- JWT access tokens expire in 1 day — refresh tokens in 7 days
-- Refresh token rotation — old token invalidated on every refresh
-- Rate limiting — 10 attempts per 15 min on auth routes
-- Helmet — 15+ HTTP security headers
-- Request body limited to 10kb
-- Passwords hashed with bcrypt (10 rounds)
+- JWT access tokens expire in **1 day** — refresh tokens in **7 days**
+- **Refresh token rotation** — old token invalidated on every refresh
+- **Rate limiting** — 10 attempts per 15 min on auth routes
+- **Helmet** — 15+ HTTP security headers set automatically
+- Request body limited to **10kb**
+- Passwords hashed with **bcrypt** (10 rounds)
 - Role-based middleware on every protected route
+
+---
+
+## Challenges & What I Learned
+
+**Token expiry race conditions** — When the QR token rotated exactly as a student was submitting, requests would fail with a false "invalid token" error. I solved this with a short overlap window: the server accepts the previous token for 2 seconds after rotation, making the UX seamless without meaningfully reducing security.
+
+**Refresh token rotation** — Implementing silent token refresh with Axios interceptors while avoiding request queuing bugs taught me a lot about how auth flows work in production apps — race conditions when multiple requests fire simultaneously before a token is refreshed required a pending-promise pattern.
+
+**Role-based architecture** — Designing a single Express backend that serves three completely different user experiences (student/teacher/admin) cleanly required thinking carefully about middleware layering and service separation early on.
 
 ---
 
 ## Deployment
 
-| Service | Purpose | URL |
-|---------|---------|-----|
-| Vercel | Frontend hosting | Auto-deploy from GitHub |
-| Render | Backend hosting | Auto-deploy from GitHub |
-| MongoDB Atlas | Database | M0 free cluster |
-| Resend | Email delivery | Free tier |
+| Service       | Purpose          | Notes                           |
+| ------------- | ---------------- | ------------------------------- |
+| Vercel        | Frontend hosting | Auto-deploys on push to `main`  |
+| Render        | Backend hosting  | Free tier — cold starts ~10–15s |
+| MongoDB Atlas | Database         | M0 free cluster                 |
+| Resend        | Email delivery   | Free tier (3,000 emails/month)  |
 
 ---
 
 ## Author
 
 **Gurwinder Singh**
-[GitHub](https://github.com/gurwindersingh777) 
+[GitHub](https://github.com/gurwindersingh777)
 
----
+
