@@ -6,34 +6,49 @@ import { SubjectModel } from "../models/subject.model.js"
 import { ApiError } from "../utils/ApiError.js"
 
 export const getMyAttendanceSummary = async (studentId: string) => {
-  const summaries = await AttendanceSummaryModel.find({ studentId })
-    .populate("subjectId", "subjectName subjectCode teacherId")
 
-  const subjectSummary = summaries.map(summary => ({
-    subject: summary.subjectId,
-    totalLectures: summary.totalSessions,
-    attendedLectures: summary.attendedSessions,
-    percentage: summary.totalSessions === 0
-      ? 0
-      : Number(((summary.attendedSessions / summary.totalSessions) * 100).toFixed(2))
-  }))
+  const enrolledSubjects = await SubjectModel.find({ students: studentId })
 
-  const totalLectures = summaries.reduce((acc, summary) => acc + summary.totalSessions, 0)
+  const subjectSummaries = await Promise.all(
+    enrolledSubjects.map(async (subject) => {
 
-  const totalAttendedLectures = summaries.reduce((acc, summary) => acc + summary.attendedSessions, 0)
+      const allSessionIds = await AttendanceSessionModel.find({ subjectId: subject._id }).distinct("_id")
+      const totalSessions = allSessionIds.length
+      const attendedSessions = await AttendanceRecordModel.countDocuments({
+        studentId,
+        sessionId: { $in: allSessionIds },
+      })
+      const percentage = totalSessions === 0 ? 0 : Number(((attendedSessions / totalSessions) * 100)
+        .toFixed(2))
 
-  const overallPercentage = totalLectures === 0 ? 0
-    : Number(((totalAttendedLectures / totalLectures) * 100).toFixed(2))
+      return {
+        subject: {
+          _id: subject._id,
+          subjectName: subject.subjectName,
+          subjectCode: subject.subjectCode,
+          teacherId: subject.teacherId,
+        },
+        totalLectures: totalSessions,
+        attendedLectures: attendedSessions,
+        percentage,
+      }
+    })
+  )
 
-  const actionNeeded = overallPercentage < Number(process.env.LOW_ATTENDANCE_THRESHOLD)
+  const totalLectures = subjectSummaries.reduce((acc, s) => acc + s.totalLectures, 0)
+  const totalAttendedLectures = subjectSummaries.reduce((acc, s) => acc + s.attendedLectures, 0)
+  const overallPercentage = totalLectures === 0 ? 0 : Number(((totalAttendedLectures / totalLectures) * 100)
+    .toFixed(2))
+  const THRESHOLD = Number(process.env.LOW_ATTENDANCE_THRESHOLD) || 75
+  const actionNeeded = overallPercentage < THRESHOLD
 
   return {
     overall: {
       percentage: overallPercentage,
       actionNeeded,
-      subjectsEnrolled: summaries.length,
+      subjectsEnrolled: enrolledSubjects.length,
     },
-    subjects: subjectSummary
+    subjects: subjectSummaries,
   }
 }
 
