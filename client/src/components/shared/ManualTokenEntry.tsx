@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import z from "zod"
-
 import { Label } from "../ui/label"
 import { KeyRound, Loader2 } from "lucide-react"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { cn } from "@/lib/utils"
 import { MarkAttendanceInput, markAttendanceSchema } from "@/schemas/sesssion.schema"
+import { getLocation } from "@/utils/getLocation"
+import { useState } from "react"
+import toast from "react-hot-toast"
 
 interface Props {
   onSubmit: (data: MarkAttendanceInput) => void
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function ManualTokenEntry({ onSubmit, isPending }: Props) {
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
 
   const {
     register,
@@ -25,13 +27,17 @@ export default function ManualTokenEntry({ onSubmit, isPending }: Props) {
     resolver: zodResolver(markAttendanceSchema)
   })
 
-  const submit = (data: MarkAttendanceInput) => {
-
-    onSubmit({
-      manualCode: data.manualCode
-    })
-
-    reset()
+  const submit = async (data: MarkAttendanceInput) => {
+    try {
+      setIsGettingLocation(true)
+      const location = await getLocation()
+      onSubmit({ manualCode: data.manualCode, location })
+      reset()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to access location")
+    } finally {
+      setIsGettingLocation(false)
+    }
   }
 
   return (
@@ -67,10 +73,10 @@ export default function ManualTokenEntry({ onSubmit, isPending }: Props) {
           <Button
             type="submit"
             size="sm"
-            disabled={isPending}
+            disabled={isPending || isGettingLocation}
             className="bg-slate-900 hover:bg-slate-700 shrink-0"
           >
-            {isPending ? (
+            {isPending || isGettingLocation ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               "Submit"

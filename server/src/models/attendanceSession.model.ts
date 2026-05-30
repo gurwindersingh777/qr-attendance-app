@@ -7,6 +7,10 @@ export interface AttendanceSessionDocument extends Document {
   endTime: Date
   manualCode: string
   active: boolean
+  location: {
+    latitude: number
+    longitude: number
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -38,6 +42,12 @@ const attendanceSessionSchema = new mongoose.Schema<AttendanceSessionDocument>(
     active: {
       type: Boolean,
       default: true,
+    },
+    location: {
+      type: {
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true },
+      }
     },
   },
   { timestamps: true }

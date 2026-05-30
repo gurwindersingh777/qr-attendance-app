@@ -3,6 +3,7 @@ import ManualTokenEntry from "@/components/shared/ManualTokenEntry"
 import { Button } from "@/components/ui/button"
 import { useQRScanner } from "@/hooks/useQRScanner"
 import { MarkAttendanceInput } from "@/schemas/sesssion.schema"
+import { getLocation } from "@/utils/getLocation"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Camera, CameraOff, CheckCircle2, Loader2, RefreshCw, ScanLine } from "lucide-react"
 import { useCallback, useState } from "react"
@@ -37,17 +38,19 @@ export default function StudentScanQR() {
   })
 
   const handleScan = useCallback(
-    (scannedValue: string) => {
+    async (scannedValue: string) => {
       if (isPending) return
       try {
         const parsed = JSON.parse(scannedValue)
-        if (!parsed.token) {
-          throw new Error()
-        }
-        markAttendance({token: parsed.token})
-      } catch {
+        if (!parsed.token) throw new Error();
+
+        const location = await getLocation()
+        markAttendance({ token: parsed.token, location })
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "Something went wrong"
+        toast.error(msg)
         setScanState("error")
-        setLastMessage("Invalid QR code")
+        setLastMessage(msg)
       }
     },
     [isPending, markAttendance]

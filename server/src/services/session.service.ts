@@ -7,6 +7,7 @@ import { SubjectModel } from "../models/subject.model.js"
 import { MarkAttendanceInput, StartSessionInput } from "../schemas/sessoin.schema.js"
 import { ApiError } from "../utils/ApiError.js"
 import { now, oneDayAgo, sessionEndTime } from "../utils/date.js"
+import { getDistance } from "../utils/location.js"
 import { generateManualCode } from "../utils/manualCode.js"
 import { generateQRToken, verifyQRToken } from "../utils/qrCode.js"
 import { sendLowAttendanceEmail } from "../utils/sendLowAttendanceEmail.js"
@@ -87,7 +88,8 @@ export const startSession = async (data: StartSessionInput, teacherId: string) =
     subjectId: data.subjectId,
     startTime: now(),
     endTime: sessionEndTime(data.durationMinutes),
-    manualCode: generateManualCode()
+    manualCode: generateManualCode(),
+    location: data.location
   })
 
   return session
@@ -155,7 +157,7 @@ export const getActiveSession = async (teacherId: string) => {
 }
 
 export const markAttendance = async (data: MarkAttendanceInput, studentId: string) => {
-
+  
   if (data.token && data.manualCode) {
     throw new ApiError(BAD_REQUEST, "Use either QR or manual code")
   }
@@ -197,7 +199,24 @@ export const markAttendance = async (data: MarkAttendanceInput, studentId: strin
     throw new ApiError(FORBIDDEN, "You have not enrolled in this subject")
   }
 
+  const ATTENDANCE_RADIUS_METERS = Number(process.env.ATTENDANCE_RADIUS_METERS) || 150
+
+  const distance = getDistance(
+    session.location.latitude,
+    session.location.longitude,
+    data.location.latitude,
+    data.location.longitude,
+  )
+
+  if (distance > ATTENDANCE_RADIUS_METERS) {
+    throw new ApiError(
+      FORBIDDEN,
+      `You are ${Math.round(distance)}m away from the classroom. Must be within ${ATTENDANCE_RADIUS_METERS}m.`
+    )
+  }
+
   const alreadyMarked = await AttendanceRecordModel.findOne({ studentId, sessionId: session._id })
+
   if (alreadyMarked) throw new ApiError(FORBIDDEN, "You have already marked attendance for this session");
 
   const record = await AttendanceRecordModel.create({

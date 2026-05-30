@@ -7,20 +7,14 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
-import z from "zod"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
 import { Button } from "../ui/button"
 import { Loader2, Play } from "lucide-react"
 import { Label } from "../ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { cn } from "@/lib/utils"
-
-const schema = z.object({
-  subjectId: z.string().min(1, 'Select a subject'),
-  durationMinutes: z.number().min(1).max(180),
-})
-
-type Form = z.infer<typeof schema>
+import { StartSessionInput, startSessionSchema } from "@/schemas/sesssion.schema"
+import { getLocation } from "@/utils/getLocation"
 
 const DURATIONS = [
   { label: '30 minutes', value: 30 },
@@ -37,6 +31,7 @@ interface Props {
 
 export default function StartSessionDialog({ defaultSubjectId }: Props) {
   const [open, setOpen] = useState(false)
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
@@ -48,8 +43,8 @@ export default function StartSessionDialog({ defaultSubjectId }: Props) {
 
   const subjects: Subject[] = subjectsData?.data ?? []
 
-  const { setValue, handleSubmit, formState: { errors } } = useForm<Form>({
-    resolver: zodResolver(schema),
+  const { setValue, handleSubmit, formState: { errors } } = useForm<StartSessionInput>({
+    resolver: zodResolver(startSessionSchema),
     defaultValues: {
       subjectId: defaultSubjectId ?? '',
       durationMinutes: 60,
@@ -57,7 +52,7 @@ export default function StartSessionDialog({ defaultSubjectId }: Props) {
   })
 
   const { mutate: start, isPending } = useMutation({
-    mutationFn: (data: Form) => sessionApi.start(data),
+    mutationFn: (data: StartSessionInput) => sessionApi.start(data),
     onSuccess: (res) => {
       const sessionId = res.data?._id
       queryClient.invalidateQueries({ queryKey: ['sessions', 'active'] })
@@ -66,9 +61,22 @@ export default function StartSessionDialog({ defaultSubjectId }: Props) {
       navigate(`/teacher/session/${sessionId}`)
     },
     onError: (error: any) => {
-      toast.success(error?.response?.data.message || "something went wrong")
+      toast.error(error?.response?.data.message || "Something went wrong")
     }
   })
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      setIsGettingLocation(true)
+      const location = await getLocation()
+      start({ ...data, location: location, })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to access location")
+    } finally {
+      setIsGettingLocation(false)
+    }
+  })
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
 
@@ -86,7 +94,7 @@ export default function StartSessionDialog({ defaultSubjectId }: Props) {
             A QR code will be generated and rotated every 30 seconds.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit((data) => start(data))} className="space-y-4 mt-2">
+        <form onSubmit={onSubmit} className="space-y-4 mt-2">
           <div className="space-y-1.5">
             <Label>Subject</Label>
             <Select
@@ -135,11 +143,20 @@ export default function StartSessionDialog({ defaultSubjectId }: Props) {
               onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm"
-              className="bg-green-600 hover:bg-green-700" disabled={isPending}>
-              {isPending
-                ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Starting...</>
-                : 'Start session'}
+            <Button
+              type="submit"
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isPending || isGettingLocation}
+            >
+              {isPending || isGettingLocation ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  {isGettingLocation ? "Getting location..." : "Starting..."}
+                </>
+              ) : (
+                "Start session"
+              )}
             </Button>
           </div>
         </form>
