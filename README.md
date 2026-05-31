@@ -11,7 +11,7 @@
 
 <br/>
 
-🚀 **[Live Demo](https://your-live-url.vercel.app)** &nbsp;·&nbsp; 📡 **[Backend API](https://your-api-url.onrender.com/health)**
+🚀 **[Live Demo](https://qr-attendance--app.vercel.app/)** &nbsp;·&nbsp; 📡 **[Backend API](https://qr-attendance-app-xj9r.onrender.com/health)**
 
 <br/>
 
