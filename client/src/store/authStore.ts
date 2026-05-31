@@ -14,22 +14,9 @@ export const useAuthStore = create<ExtendedAuthState>()(
       isAuthenticated: false,
       hydrated: false,
 
-      setUser: (user) =>
-        set({
-          user,
-          isAuthenticated: true
-        }),
-
-      clearUser: () =>
-        set({
-          user: null,
-          isAuthenticated: false
-        }),
-
-      setHydrated: (state) =>
-        set({
-          hydrated: state
-        }),
+      setUser: (user) => set({ user, isAuthenticated: true }),
+      clearUser: () => set({ user: null, isAuthenticated: false }),
+      setHydrated: (state) => set({ hydrated: state }),
     }),
 
     {
@@ -40,9 +27,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
         isAuthenticated: state.isAuthenticated
       }),
 
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true)
-      }
+      onRehydrateStorage: () => (state) => { state?.setHydrated(true) }
     }
   )
 )

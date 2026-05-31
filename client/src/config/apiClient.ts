@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/store/authStore";
 import axios from "axios";
 
 const api = axios.create({
@@ -18,6 +19,7 @@ api.interceptors.response.use(
         await api.get("/auth/refresh")
         return api(original);
       } catch {
+        useAuthStore.getState().clearUser()
         window.location.href = "/login"
       }
     }
