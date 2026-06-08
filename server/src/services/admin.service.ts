@@ -1,7 +1,7 @@
 import { CONFLICT, FORBIDDEN, NOT_FOUND } from "../constants/statusCode.js"
 import { SubjectModel } from "../models/subject.model.js"
 import { UserModel } from "../models/user.model.js"
-import { UpdateUserInput } from "../schemas/user.schema.js"
+import { UpdateUserForm } from "../schemas/user.schema.js"
 import { Role } from "../types/role.js"
 import { ApiError } from "../utils/ApiError.js"
 
@@ -34,7 +34,7 @@ export const getUserById = async (userId: string) => {
   return user
 }
 
-export const updateUserProfile = async (userId: string, data: UpdateUserInput) => {
+export const updateUserProfile = async (userId: string, data: UpdateUserForm) => {
   const user = await UserModel.findById(userId)
   if (!user) {
     throw new ApiError(NOT_FOUND, "User not found")
