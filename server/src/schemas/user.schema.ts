@@ -1,18 +1,22 @@
-import z from "zod";
+import z from "zod"
 
 export const updateUserSchema = z.object({
   name: z
-    .string().min(2).max(50)
-    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
-    .trim()
-    .optional(),
-  email: z.string().email().toLowerCase().trim().optional(),
-  role: z.enum(["student", "teacher", "admin"]).optional(),
-  rollNumber: z
-    .string().min(1).max(20)
-    .regex(/^[a-zA-Z0-9]+$/, "Roll number can only contain letters and numbers")
-    .trim()
-    .optional(),
-});
+    .string()
+    .min(2, 'At least 2 characters')
+    .max(50)
+    .regex(/^[a-zA-Z\s]+$/, 'Letters only')
+    .trim(),
 
-export type UpdateUserInput = z.infer<typeof updateUserSchema> 
+  email: z
+    .string()
+    .email('Invalid email')
+    .trim()
+    .toLowerCase(),
+
+  role: z.enum(['student', 'teacher', 'admin']),
+
+  rollNumber: z.string().max(20).optional(),
+})
+
+export type UpdateUserForm = z.infer<typeof updateUserSchema>

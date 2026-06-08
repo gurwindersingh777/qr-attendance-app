@@ -11,6 +11,11 @@ export const register = async (data: RegisterInput) => {
     throw new ApiError(CONFLICT, "User already exists")
   }
 
+  const existingRollNumber = await UserModel.findOne({ rollNumber: data.rollNumber })
+
+  if (existingRollNumber) {
+    throw new ApiError(CONFLICT, "A student with this roll number already exists.")
+  }
   const user = await UserModel.create({
     name: data.name,
     email: data.email,

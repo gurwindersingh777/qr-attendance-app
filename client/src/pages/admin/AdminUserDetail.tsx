@@ -1,4 +1,5 @@
 import { adminApi } from "@/api/admin"
+import DeleteUser from "@/components/shared/DeleteUser"
 import PageLoader from "@/components/shared/PageLoader"
 import RoleBadge from "@/components/shared/RoleBadge"
 import { Button } from "@/components/ui/button"
@@ -64,7 +65,7 @@ export default function AdminUserDetail() {
       toast.error(err?.response?.data.message || "Somthing went wrong")
     }
   })
-  
+
 
   const { mutate: deleteUser, isPending: isDeleting } = useMutation({
     mutationFn: () => adminApi.deleteUser(userId!),
@@ -190,51 +191,7 @@ export default function AdminUserDetail() {
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-              <DialogTrigger>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-red-200 text-red-600 hover:bg-red-50">
-                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                  Delete user
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-sm">
-                <DialogHeader>
-                  <DialogTitle>Delete {user.name}?</DialogTitle>
-                  <DialogDescription>
-                    This will permanently delete the user
-                    {user.role === 'student'
-                      ? ' and remove them from all enrolled subjects.'
-                      : user.role === 'teacher'
-                        ? ' and delete all subjects they teach.'
-                        : '.'}
-                    {' '}This cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex gap-2 justify-end mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDeleteOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    onClick={() => deleteUser()}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting
-                      ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Deleting...</>
-                      : 'Yes, delete'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <DeleteUser user={user} />
 
             <Button
               type="submit"
